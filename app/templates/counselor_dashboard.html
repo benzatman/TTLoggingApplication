@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Counselor Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <h2>Welcome, Counselor {{ current_user.username }}</h2>
+    <h3>Pending Requests</h3>
+    <ul>
+        {% for request in pending_requests %}
+        <li>
+            <strong>{{ request.student.username }}</strong> requested a {{ request.request_type }}:
+            <p>{{ request.details }}</p>
+            <form method="POST" action="{{ url_for('approve_request', request_id=request.id) }}">
+                <button name="action" value="approve" class="btn btn-success">Approve</button>
+                <button name="action" value="reject" class="btn btn-danger">Reject</button>
+            </form>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

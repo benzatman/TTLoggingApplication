@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Director Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <h2>Welcome, Director {{ current_user.username }}</h2>
+    <h3>All Requests</h3>
+    <ul>
+        {% for request in all_requests %}
+        <li>
+            <strong>{{ request.student.username }}</strong> requested a {{ request.request_type }}:
+            <p>{{ request.details }}</p>
+            <p>Status: {{ request.status }}</p>
+            {% if request.status == 'rejected' %}
+            <form method="POST" action="{{ url_for('override_decision', request_id=request.id) }}">
+                <button name="action" value="override" class="btn btn-warning">Override Decision</button>
+            </form>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
