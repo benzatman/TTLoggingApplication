@@ -1,8 +1,7 @@
 import os
 
-basedir = os.path.abspath(os.path.dirname(__file__))
 
 class Config:
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'your_secret_key'
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'TTRequestsV7.db')
+    MYSQL_PASSWORD = os.getenv('mysql_password')
+    SQLALCHEMY_DATABASE_URI = f'mysql://TT:{MYSQL_PASSWORD}@localhost/TTRequests'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
