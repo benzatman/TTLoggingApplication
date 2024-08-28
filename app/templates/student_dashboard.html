@@ -5,29 +5,36 @@
 {% block content %}
 <div class="dashboard-container">
     <h2>Welcome, {{ current_user.username }}</h2>
-    <h3>Your Requests</h3>
-    <ul>
-        {% for request in requests %}
-        <li>
-            <strong>{{ request.request_type }}</strong>: {{ request.status }} ({{ request.submission_time }})
-            <p>{{ request.details }}</p>
-        </li>
-        {% endfor %}
-    </ul>
 
-    <h3>Submit a New Request</h3>
+    <h3>Submit a Request</h3>
     <form method="POST" action="{{ url_for('submit_request') }}">
-        {{ form.hidden_tag() }}
+        {{ request_form.hidden_tag() }}
         <div class="form-group">
-            {{ form.request_type.label }}
-            {{ form.request_type(class="form-control") }}
+            {{ request_form.request_type.label }}
+            {{ request_form.request_type(class="form-control") }}
         </div>
         <div class="form-group">
-            {{ form.details.label }}
-            {{ form.details(class="form-control") }}
+            {{ request_form.details.label }}
+            {{ request_form.details(class="form-control") }}
         </div>
         <div class="form-group">
-            {{ form.submit(class="btn btn-primary") }}
+            {{ request_form.submit(class="btn btn-primary") }}
+        </div>
+    </form>
+
+    <h3>Submit Off Shabbat Destination</h3>
+    <form method="POST" action="{{ url_for('submit_shabbat') }}">
+        {{ shabbat_form.hidden_tag() }}
+        <div class="form-group">
+            {{ shabbat_form.destination.label }}
+            {{ shabbat_form.destination(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ shabbat_form.contact_info.label }}
+            {{ shabbat_form.contact_info(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ shabbat_form.submit(class="btn btn-primary") }}
         </div>
     </form>
 </div>

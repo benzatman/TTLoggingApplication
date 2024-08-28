@@ -1,7 +1,9 @@
-flask
+flask~=3.0.3
 sqlalchemy
 flask_sqlalchemy
 flask_login
 flask_wtf
 boto3
 mysqlclient
+wtforms~=3.1.2
+werkzeug~=3.0.3

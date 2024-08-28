@@ -31,3 +31,12 @@ class AbsenceLog(db.Model):
     submission_time = db.Column(db.DateTime, default=db.func.now().op('AT TIME ZONE')('Asia/Jerusalem'))
     decision_time = db.Column(db.DateTime)
     counselor_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+
+class OffShabbatDestinationLog(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    shabbat_date = db.Column(db.DateTime, default=db.func.now().op('AT TIME ZONE')('Asia/Jerusalem'))
+    relation_to_host = db.Column(db.String(50), nullable=False)
+    destination = db.Column(db.String(50), nullable=False)
+    submission_time = db.Column(db.DateTime, default=db.func.now().op('AT TIME ZONE')('Asia/Jerusalem'))

@@ -5,20 +5,50 @@
 {% block content %}
 <div class="dashboard-container">
     <h2>Welcome, Director {{ current_user.username }}</h2>
-    <h3>All Requests</h3>
+
+    <h3>Unanswered Requests</h3>
     <ul>
-        {% for request in all_requests %}
+        {% for request in unanswered_requests %}
         <li>
             <strong>{{ request.student.username }}</strong> requested a {{ request.request_type }}:
             <p>{{ request.details }}</p>
-            <p>Status: {{ request.status }}</p>
-            {% if request.status == 'rejected' %}
-            <form method="POST" action="{{ url_for('override_decision', request_id=request.id) }}">
-                <button name="action" value="override" class="btn btn-warning">Override Decision</button>
+            <form method="POST" action="{{ url_for('approve_request', request_id=request.id) }}">
+                <button name="action" value="approve" class="btn btn-success">Approve</button>
+                <button name="action" value="reject" class="btn btn-danger">Reject</button>
             </form>
-            {% endif %}
         </li>
         {% endfor %}
     </ul>
+
+    <h3>Log an Absence</h3>
+    <form method="POST" action="{{ url_for('log_absence') }}">
+        {{ absence_form.hidden_tag() }}
+        <div class="form-group">
+            {{ absence_form.student_id.label }}
+            {{ absence_form.student_id(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ absence_form.absence_type.label }}
+            {{ absence_form.absence_type(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ absence_form.reason.label }}
+            {{ absence_form.reason(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ absence_form.submit(class="btn btn-primary") }}
+        </div>
+    </form>
+
+    <h3>Manage Users</h3>
+    <form method="POST" action="{{ url_for('manage_users') }}">
+        <!-- Add user logic -->
+        <input type="submit" name="add_user" value="Add User" class="btn btn-primary">
+        <!-- Delete user logic -->
+        <input type="submit" name="delete_user" value="Delete User" class="btn btn-danger">
+    </form>
+
+    <h3>View Statistics</h3>
+    <a href="{{ url_for('statistics') }}" class="btn btn-info">View Statistics</a>
 </div>
 {% endblock %}
