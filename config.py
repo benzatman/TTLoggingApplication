@@ -7,6 +7,6 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Twilio configuration
-    TWILIO_ACCOUNT_SID = 'your_account_sid'
-    TWILIO_AUTH_TOKEN = 'your_auth_token'
-    TWILIO_WHATSAPP_FROM = 'whatsapp:+14155238886'  # Twilio sandbox number
+    TWILIO_ACCOUNT_SID = os.getenv('twilio_account_sid')
+    TWILIO_AUTH_TOKEN = os.getenv('twilio_auth_token')
+    TWILIO_WHATSAPP_FROM = 'whatsapp:+12172861211'
