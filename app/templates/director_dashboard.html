@@ -6,6 +6,7 @@
 <div class="dashboard-container">
     <h2>Welcome, Director {{ current_user.username }}</h2>
 
+    <!-- Unanswered Requests Section -->
     <h3>Unanswered Requests</h3>
     <ul>
         {% for request in unanswered_requests %}
@@ -13,6 +14,7 @@
             <strong>{{ request.student.username }}</strong> requested a {{ request.request_type }}:
             <p>{{ request.details }}</p>
             <form method="POST" action="{{ url_for('approve_request', request_id=request.id) }}">
+                <textarea name="message" placeholder="Leave a message (optional)" class="form-control"></textarea>
                 <button name="action" value="approve" class="btn btn-success">Approve</button>
                 <button name="action" value="reject" class="btn btn-danger">Reject</button>
             </form>
@@ -20,6 +22,7 @@
         {% endfor %}
     </ul>
 
+    <!-- Log an Absence Section -->
     <h3>Log an Absence</h3>
     <form method="POST" action="{{ url_for('log_absence') }}">
         {{ absence_form.hidden_tag() }}
@@ -40,15 +43,45 @@
         </div>
     </form>
 
+    <!-- Manage Users Section -->
     <h3>Manage Users</h3>
     <form method="POST" action="{{ url_for('manage_users') }}">
-        <!-- Add user logic -->
-        <input type="submit" name="add_user" value="Add User" class="btn btn-primary">
-        <!-- Delete user logic -->
-        <input type="submit" name="delete_user" value="Delete User" class="btn btn-danger">
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" name="username" placeholder="Username" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" name="password" placeholder="Password" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label for="phone_number">Phone Number</label>
+            <input type="text" name="phone_number" placeholder="Phone Number" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label for="role">Role</label>
+            <select name="role" class="form-control" required>
+                <option value="student">Student</option>
+                <option value="counselor">Counselor</option>
+                <option value="director">Director</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <input type="submit" name="add_user" value="Add User" class="btn btn-primary">
+            <input type="submit" name="delete_user" value="Delete User" class="btn btn-danger">
+        </div>
     </form>
 
+    <!-- View Statistics Section -->
     <h3>View Statistics</h3>
-    <a href="{{ url_for('statistics') }}" class="btn btn-info">View Statistics</a>
+    <form method="POST" action="{{ url_for('statistics') }}">
+        <div class="form-group">
+            <label for="username">Search by Student Username</label>
+            <input type="text" name="username" placeholder="Enter Student Username" class="form-control">
+        </div>
+        <div class="form-group">
+            <input type="submit" value="Search" class="btn btn-info">
+        </div>
+    </form>
 </div>
 {% endblock %}

@@ -13,6 +13,7 @@
             <strong>{{ request.student.username }}</strong> requested a {{ request.request_type }}:
             <p>{{ request.details }}</p>
             <form method="POST" action="{{ url_for('approve_request', request_id=request.id) }}">
+                <textarea name="message" placeholder="Leave a message (optional)" class="form-control"></textarea>
                 <button name="action" value="approve" class="btn btn-success">Approve</button>
                 <button name="action" value="reject" class="btn btn-danger">Reject</button>
             </form>

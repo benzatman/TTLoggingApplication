@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Statistics{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <h2>Statistics for {{ stats.username }}</h2>
+
+    <ul>
+        <li>Total Requests: {{ stats.total_requests }}</li>
+        <li>Approved Requests: {{ stats.approved_requests }}</li>
+        <li>Rejected Requests: {{ stats.rejected_requests }}</li>
+        <li>Absences: {{ stats.absences }}</li>
+        <li>Average Counselor Response Time: {{ stats.avg_response_time }} seconds</li>
+    </ul>
+
+    <a href="{{ url_for('dashboard') }}" class="btn btn-primary">Back to Dashboard</a>
+</div>
+{% endblock %}

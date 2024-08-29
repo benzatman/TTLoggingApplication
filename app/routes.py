@@ -1,9 +1,45 @@
 from flask import render_template, redirect, url_for, flash, request
 from flask_login import login_user, logout_user, login_required, current_user
-from werkzeug.security import check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
+from twilio.rest import Client
+from datetime import datetime
 from app import app, db
 from app.models import User, Request
 from app.forms import LoginForm, RequestForm, OffShabbatDestinationForm, AbsenceLoggingForm
+from app.models import User
+
+
+twilio_client = Client(app.config['TWILIO_ACCOUNT_SID'], app.config['TWILIO_AUTH_TOKEN'])
+
+
+def get_phone_numbers_by_role(role):
+    """Get the list of phone numbers for users with the specified role."""
+    users = User.query.filter_by(role=role).all()
+    return [f"whatsapp:{user.phone_number}" for user in users if user.phone_number]
+
+
+def send_whatsapp_message_to_roles(roles, message):
+    """Send a WhatsApp message to all users with the specified roles."""
+    phone_numbers = []
+    for role in roles:
+        phone_numbers.extend(get_phone_numbers_by_role(role))
+
+    for number in phone_numbers:
+        twilio_client.messages.create(
+            body=message,
+            from_=app.config['TWILIO_WHATSAPP_FROM'],
+            to=number
+        )
+
+
+def send_whatsapp_message(to_numbers, message):
+    for number in to_numbers:
+        twilio_client.messages.create(
+            body=message,
+            from_=app.config['TWILIO_WHATSAPP_FROM'],
+            to=number
+        )
+
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -57,8 +93,14 @@ def submit_request():
         )
         db.session.add(new_request)
         db.session.commit()
+
+        # Send WhatsApp message to directors and counselors
+        message = f'You have a new request from {current_user.username}.'
+        send_whatsapp_message_to_roles(['director', 'counselor'], message)
+
         flash('Request submitted successfully.', 'success')
     return redirect(url_for('dashboard'))
+
 
 
 @app.route('/log_absence', methods=['POST'])
@@ -78,30 +120,100 @@ def log_absence():
     return redirect(url_for('dashboard'))
 
 
-@app.route('/manage_users', methods=['POST'])
+@app.route('/manage_users', methods=['GET', 'POST'])
 @login_required
 def manage_users():
     if current_user.role != 'director':
         flash('You do not have permission to access this page.', 'danger')
         return redirect(url_for('dashboard'))
 
-    if 'add_user' in request.form:
-        # Add user logic
-        pass
-    elif 'delete_user' in request.form:
-        # Delete user logic
-        pass
+    if request.method == 'POST':
+        username = request.form.get('username')
+        phone_number = request.form.get('phone_number')
+        role = request.form.get('role')
+        password = request.form.get('password')
 
-    flash('User management action completed.', 'success')
+        if 'add_user' in request.form:
+            new_user = User(
+                username=username,
+                password_hash=password,
+                role=role,
+                phone_number=phone_number
+            )
+            db.session.add(new_user)
+            db.session.commit()
+            flash('User added successfully.', 'success')
+        elif 'delete_user' in request.form:
+            user = User.query.filter_by(username=username).first()
+            if user:
+                db.session.delete(user)
+                db.session.commit()
+                flash('User deleted successfully.', 'success')
+
     return redirect(url_for('dashboard'))
 
 
-@app.route('/statistics')
+@app.route('/statistics', methods=['GET', 'POST'])
 @login_required
 def statistics():
     if current_user.role != 'director':
         flash('You do not have permission to access this page.', 'danger')
         return redirect(url_for('dashboard'))
 
-    # Logic to calculate statistics
+    stats = {}
+    if request.method == 'POST':
+        username = request.form.get('username')
+        user = User.query.filter_by(username=username).first()
+        if user:
+            stats['total_requests'] = Request.query.filter_by(student_id=user.id).count()
+            stats['approved_requests'] = Request.query.filter_by(student_id=user.id, status='approved').count()
+            stats['rejected_requests'] = Request.query.filter_by(student_id=user.id, status='rejected').count()
+            stats['absences'] = Request.query.filter_by(student_id=user.id, request_type='absence').count()
+
+            # Calculate average response time
+            response_times = []
+            for req in Request.query.filter_by(counselor_id=user.id).all():
+                if req.decision_time and req.submission_time:
+                    response_times.append((req.decision_time - req.submission_time).total_seconds())
+            if response_times:
+                stats['avg_response_time'] = sum(response_times) / len(response_times)
+
+        flash('Statistics calculated successfully.', 'success')
+
     return render_template('statistics.html', stats=stats)
+
+
+@app.route('/approve_request/<int:request_id>', methods=['POST'])
+@login_required
+def approve_request(request_id):
+    request = Request.query.get_or_404(request_id)
+    if current_user.role not in ['counselor', 'director']:
+        flash('You do not have permission to perform this action.', 'danger')
+        return redirect(url_for('dashboard'))
+
+    action = request.form.get('action')
+    message = request.form.get('message')
+    if action == 'approve':
+        request.status = 'approved'
+        request.decision_time = datetime.utcnow()
+        request.decision_message = message
+        request.counselor_id = current_user.id
+        db.session.commit()
+
+        # Notify the counselors and directors
+        notification_message = f'Request from {request.student.username} was approved by {current_user.username}.'
+        send_whatsapp_message_to_roles(['director', 'counselor'], notification_message)
+        flash('Request approved.', 'success')
+    elif action == 'reject':
+        request.status = 'rejected'
+        request.decision_time = datetime.utcnow()
+        request.decision_message = message
+        request.counselor_id = current_user.id
+        db.session.commit()
+
+        # Notify the counselors and directors
+        notification_message = f'Request from {request.student.username} was rejected by {current_user.username}.'
+        send_whatsapp_message_to_roles(['director', 'counselor'], notification_message)
+        flash('Request rejected.', 'danger')
+
+    return redirect(url_for('dashboard'))
