@@ -7,3 +7,4 @@ boto3
 mysqlclient
 wtforms~=3.1.2
 werkzeug~=3.0.3
+twilio~=9.2.4

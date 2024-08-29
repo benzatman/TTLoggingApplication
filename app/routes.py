@@ -6,7 +6,6 @@ from datetime import datetime
 from app import app, db
 from app.models import User, Request
 from app.forms import LoginForm, RequestForm, OffShabbatDestinationForm, AbsenceLoggingForm
-from app.models import User
 
 
 twilio_client = Client(app.config['TWILIO_ACCOUNT_SID'], app.config['TWILIO_AUTH_TOKEN'])
@@ -39,7 +38,6 @@ def send_whatsapp_message(to_numbers, message):
             from_=app.config['TWILIO_WHATSAPP_FROM'],
             to=number
         )
-
 
 
 @app.route('/login', methods=['GET', 'POST'])
