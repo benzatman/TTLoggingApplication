@@ -37,5 +37,17 @@
             {{ shabbat_form.submit(class="btn btn-primary") }}
         </div>
     </form>
+
+    <h3>Your Recent Requests</h3>
+    <ul>
+        {% for request in recent_requests %}
+        <li>
+            <strong>{{ request.request_type }}</strong>: {{ request.status }} ({{ request.submission_time }})
+            {% if request.decision_message %}
+            <p><strong>Message:</strong> {{ request.decision_message }}</p>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
 </div>
 {% endblock %}

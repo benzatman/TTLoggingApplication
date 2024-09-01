@@ -6,7 +6,7 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
-    role = db.Column(db.String(20), nullable=False)
+    role = db.Column(db.Integer, nullable=False)  # 1 for student, 2 for counselor, 3 for director
     phone_number_country_code = db.Column(db.String(10), nullable=False)
     phone_number = db.Column(db.String(20), nullable=False)
 
