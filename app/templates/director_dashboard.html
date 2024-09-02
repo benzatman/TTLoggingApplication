@@ -6,6 +6,38 @@
 <div class="dashboard-container">
     <h2>Welcome, Director {{ current_user.username }}</h2>
 
+    <!-- Unapproved Users Section -->
+    <h3>Users Awaiting Approval</h3>
+    {% if unapproved_users %}
+    <ul>
+        {% for user in unapproved_users %}
+        <li>
+            <strong>{{ user.username }} ({{ user.email }})</strong>
+            <form method="POST" action="{{ url_for('approve_users') }}">
+                <input type="hidden" name="user_id" value="{{ user.id }}">
+                <div class="form-group">
+                    <label for="phone_number">Phone Number</label>
+                    <input type="text" name="phone_number" placeholder="Phone Number" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="role">Role</label>
+                    <select name="role" class="form-control" required>
+                        <option value="1">Student (1)</option>
+                        <option value="2">Counselor (2)</option>
+                        <option value="3">Director (3)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-success">Approve</button>
+                </div>
+            </form>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>No users awaiting approval.</p>
+    {% endif %}
+
     <!-- Unanswered Requests Section -->
     <h3>Unanswered Requests</h3>
     <ul>

@@ -1,13 +1,26 @@
-from flask import render_template, redirect, url_for, flash, request
-from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
-from app import app, db
-from app.models import User, Request
+from app.models import Request
 from app.forms import LoginForm, RequestForm, OffShabbatDestinationForm, AbsenceLoggingForm
 from twilio.rest import Client
 from datetime import datetime
+from flask import redirect, url_for, request, flash, render_template
+from flask_login import login_user, logout_user, current_user, login_required
+from app import app, db
+from app.models import User
+from oauthlib.oauth2 import WebApplicationClient
+import requests
 
 twilio_client = Client(app.config['TWILIO_ACCOUNT_SID'], app.config['TWILIO_AUTH_TOKEN'])
+
+
+# Set up OAuth
+client = WebApplicationClient(app.config['GOOGLE_CLIENT_ID'])
+
+
+# OAuth endpoints
+def get_google_provider_cfg():
+    return requests.get(app.config['GOOGLE_DISCOVERY_URL']).json()
+
 
 
 def get_phone_numbers_by_role(role):
@@ -34,49 +47,23 @@ def send_whatsapp_message_to_roles(roles, message):
 
     send_whatsapp_message(phone_numbers, message)
 
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    form = LoginForm()
-    if form.validate_on_submit():
-        user = User.query.filter_by(username=form.username.data).first()
-        if user and check_password_hash(user.password_hash, form.password.data):
-            login_user(user)
-            flash('Logged in successfully.', 'success')
-            return redirect(url_for('dashboard'))
-        else:
-            flash('Invalid username or password.', 'danger')
-    return render_template('login.html', form=form)
-
-
-@app.route('/logout')
-@login_required
-def logout():
-    logout_user()
-    flash('You have been logged out.', 'info')
-    return redirect(url_for('login'))
-
-
 @app.route('/dashboard')
 @login_required
 def dashboard():
     if current_user.role == 1:  # Student
         request_form = RequestForm()
         shabbat_form = OffShabbatDestinationForm()
-        recent_requests = Request.query.filter_by(student_id=current_user.id).order_by(
-            Request.submission_time.desc()).limit(5).all()
-        return render_template('student_dashboard.html', request_form=request_form, shabbat_form=shabbat_form,
-                               recent_requests=recent_requests)
+        recent_requests = Request.query.filter_by(student_id=current_user.id).order_by(Request.submission_time.desc()).limit(5).all()
+        return render_template('student_dashboard.html', request_form=request_form, shabbat_form=shabbat_form, recent_requests=recent_requests)
     elif current_user.role == 2:  # Counselor
         unanswered_requests = Request.query.filter_by(status='pending').all()
         absence_form = AbsenceLoggingForm()
-        return render_template('counselor_dashboard.html', unanswered_requests=unanswered_requests,
-                               absence_form=absence_form)
+        return render_template('counselor_dashboard.html', unanswered_requests=unanswered_requests, absence_form=absence_form)
     elif current_user.role == 3:  # Director
         unanswered_requests = Request.query.filter_by(status='pending').all()
         absence_form = AbsenceLoggingForm()
-        return render_template('director_dashboard.html', unanswered_requests=unanswered_requests,
-                               absence_form=absence_form)
+        unapproved_users = User.query.filter_by(is_approved=False).all()
+        return render_template('director_dashboard.html', unanswered_requests=unanswered_requests, absence_form=absence_form, unapproved_users=unapproved_users)
 
 
 @app.route('/submit_request', methods=['POST'])
@@ -224,3 +211,105 @@ def manage_users():
                 flash('User deleted successfully.', 'success')
 
     return redirect(url_for('dashboard'))
+
+
+@app.route('/login')
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+
+    google_provider_cfg = get_google_provider_cfg()
+    authorization_endpoint = google_provider_cfg['authorization_endpoint']
+
+    request_uri = client.prepare_request_uri(
+        authorization_endpoint,
+        redirect_uri=url_for('callback', _external=True),
+        scope=['openid', 'email', 'profile'],
+    )
+    return redirect(request_uri)
+
+@app.route('/callback')
+def callback():
+    code = request.args.get('code')
+
+    google_provider_cfg = get_google_provider_cfg()
+    token_endpoint = google_provider_cfg['token_endpoint']
+
+    token_url, headers, body = client.prepare_token_request(
+        token_endpoint,
+        authorization_response=request.url,
+        redirect_url=request.base_url,
+        code=code
+    )
+    token_response = requests.post(
+        token_url,
+        headers=headers,
+        data=body,
+        auth=(app.config['GOOGLE_CLIENT_ID'], app.config['GOOGLE_CLIENT_SECRET']),
+    )
+
+    client.parse_request_body_response(json.dumps(token_response.json()))
+
+    userinfo_endpoint = google_provider_cfg['userinfo_endpoint']
+    uri, headers, body = client.add_token(userinfo_endpoint)
+    userinfo_response = requests.get(uri, headers=headers, data=body)
+
+    userinfo = userinfo_response.json()
+    email = userinfo['email']
+    name = userinfo['name']
+
+    # Check if user exists
+    user = User.query.filter_by(email=email).first()
+
+    if user:
+        if user.is_approved:
+            login_user(user)
+            return redirect(url_for('dashboard'))
+        else:
+            return render_template('awaiting_approval.html')
+    else:
+        # Create a new user and mark as unapproved
+        new_user = User(
+            email=email,
+            username=name,
+            is_approved=False
+        )
+        db.session.add(new_user)
+        db.session.commit()
+
+        flash('Your account is awaiting approval from a director.', 'info')
+        return render_template('awaiting_approval.html')
+
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash('You have been logged out.', 'info')
+    return redirect(url_for('login'))
+
+
+@app.route('/approve_users', methods=['GET', 'POST'])
+@login_required
+def approve_users():
+    if current_user.role != 3:  # Only directors can approve users
+        flash('You do not have permission to access this page.', 'danger')
+        return redirect(url_for('dashboard'))
+
+    if request.method == 'POST':
+        user_id = request.form.get('user_id')
+        phone_number = request.form.get('phone_number')
+        role = int(request.form.get('role'))
+
+        user = User.query.get(user_id)
+        if user:
+            user.phone_number = phone_number
+            user.role = role
+            user.is_approved = True
+            db.session.commit()
+
+            flash('User approved successfully.', 'success')
+            return redirect(url_for('approve_users'))
+
+    unapproved_users = User.query.filter_by(is_approved=False).all()
+    return render_template('approve_users.html', unapproved_users=unapproved_users)
