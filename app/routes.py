@@ -9,6 +9,7 @@ from app import app, db
 from app.models import User
 from oauthlib.oauth2 import WebApplicationClient
 import requests
+import json
 
 twilio_client = Client(app.config['TWILIO_ACCOUNT_SID'], app.config['TWILIO_AUTH_TOKEN'])
 

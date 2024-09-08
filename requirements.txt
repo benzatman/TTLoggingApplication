@@ -8,3 +8,5 @@ mysqlclient
 wtforms~=3.1.2
 werkzeug~=3.0.3
 twilio~=9.2.4
+requests~=2.32.3
+oauthlib~=2.1.0
