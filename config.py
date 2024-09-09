@@ -12,6 +12,6 @@ class Config:
     TWILIO_WHATSAPP_FROM = 'whatsapp:+12172861211'
 
     # Google OAuth configuration
-    GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID') or 'your_google_client_id'
-    GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET') or 'your_google_client_secret'
+    GOOGLE_CLIENT_ID = os.getenv('google_client_id')
+    GOOGLE_CLIENT_SECRET = os.getenv('google_client_secret')
     GOOGLE_DISCOVERY_URL = 'https://accounts.google.com/.well-known/openid-configuration'
