@@ -5,11 +5,12 @@ from twilio.rest import Client
 from datetime import datetime
 from flask import redirect, url_for, request, flash, render_template
 from flask_login import login_user, logout_user, current_user, login_required
-from app import app, db
+from app import db
 from app.models import User
 from oauthlib.oauth2 import WebApplicationClient
 import requests
 import json
+from run import app
 
 twilio_client = Client(app.config['TWILIO_ACCOUNT_SID'], app.config['TWILIO_AUTH_TOKEN'])
 

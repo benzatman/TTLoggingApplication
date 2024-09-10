@@ -24,7 +24,6 @@ class Request(db.Model):
     counselor_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
 
-
 class AbsenceLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
