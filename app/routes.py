@@ -10,7 +10,7 @@ from app.models import User
 from oauthlib.oauth2 import WebApplicationClient
 import requests
 import json
-from run import appp as app
+from flask import current_app as app
 
 twilio_client = Client(app.config['TWILIO_ACCOUNT_SID'], app.config['TWILIO_AUTH_TOKEN'])
 
