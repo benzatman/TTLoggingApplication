@@ -53,26 +53,33 @@
         </li>
         {% endfor %}
     </ul>
-
     <!-- Log an Absence Section -->
     <h3>Log an Absence</h3>
     <form method="POST" action="{{ url_for('log_absence') }}">
-        {{ absence_form.hidden_tag() }}
-        <div class="form-group">
-            {{ absence_form.student_id.label }}
-            {{ absence_form.student_id(class="form-control") }}
-        </div>
-        <div class="form-group">
-            {{ absence_form.absence_type.label }}
-            {{ absence_form.absence_type(class="form-control") }}
-        </div>
-        <div class="form-group">
-            {{ absence_form.reason.label }}
-            {{ absence_form.reason(class="form-control") }}
-        </div>
-        <div class="form-group">
-            {{ absence_form.submit(class="btn btn-primary") }}
-        </div>
+    {{ absence_form.hidden_tag() }}
+    <div class="form-group">
+        {{ absence_form.student_id.label }}
+        {{ absence_form.student_id(class="form-control") }}
+    </div>
+    <div class="form-group">
+        <label for="what_was_missed">What Was Missed</label>
+        <input type="text" id="what_was_missed" name="what_was_missed" placeholder="What Was Missed" class="form-control" required>
+    </div>
+    <div class="form-group">
+        <label for="time_missed">Time Missed</label>
+        <input type="text" id="time_missed" name="time_missed" placeholder="Time Missed (e.g., 10:00 AM - 12:00 PM)" class="form-control" required>
+    </div>
+    <div class="form-group">
+        {{ absence_form.reason.label }}
+        {{ absence_form.reason(class="form-control") }}
+    </div>
+    <div class="form-group">
+        <label for="details">Additional Details</label>
+        <textarea id="details" name="details" placeholder="Additional details" class="form-control"></textarea>
+    </div>
+    <div class="form-group">
+        {{ absence_form.submit(class="btn btn-primary") }}
+    </div>
     </form>
 
     <!-- Manage Users Section -->

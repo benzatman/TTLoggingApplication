@@ -6,7 +6,7 @@ from datetime import datetime
 from flask import redirect, url_for, request, flash, render_template
 from flask_login import login_user, logout_user, current_user, login_required
 from app import db
-from app.models import User
+from app.models import User, AbsenceLog
 from oauthlib.oauth2 import WebApplicationClient
 import requests
 import json
@@ -140,19 +140,19 @@ def approve_request(request_id):
 
     return redirect(url_for('dashboard'))
 
-
 @app.route('/log_absence', methods=['POST'])
 @login_required
 def log_absence():
     form = AbsenceLoggingForm()
     if form.validate_on_submit():
-        absence_record = Request(
+        absence_log = AbsenceLog(
             student_id=form.student_id.data,
-            request_type='absence',
-            details=form.reason.data,
-            status='logged'
+            what_was_missed=request.form['what_was_missed'],
+            time_missed=request.form['time_missed'],
+            details=request.form['details'],
+            counselor_id=current_user.id  # Assuming the current user is the counselor
         )
-        db.session.add(absence_record)
+        db.session.add(absence_log)
         db.session.commit()
         flash('Absence logged successfully.', 'success')
     return redirect(url_for('dashboard'))
