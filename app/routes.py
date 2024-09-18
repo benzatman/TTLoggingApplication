@@ -49,6 +49,12 @@ def send_whatsapp_message_to_roles(roles, message):
 
     send_whatsapp_message(phone_numbers, message)
 
+
+@app.route('/')
+def home():
+    return 'Hello, this is the home page! go to tlvbot.com/dashboard to see your dashboard.'
+
+
 @app.route('/dashboard')
 @login_required
 def dashboard():
