@@ -30,13 +30,9 @@ class OffShabbatDestinationForm(FlaskForm):
 
 
 class AbsenceLoggingForm(FlaskForm):
-    student_id = StringField('Student ID', validators=[DataRequired()])
+    student_id = SelectField('Student', coerce=int, validators=[DataRequired()])  # Use coerce=int to handle integer IDs
     what_was_missed = StringField('What Was Missed', validators=[DataRequired()])
     time_missed = StringField('Time Missed', validators=[DataRequired()])
     reason = TextAreaField('Reason', validators=[DataRequired()])
     details = TextAreaField('Additional Details')
-    submit = SubmitField('Log Absence')
-
-    reason = TextAreaField('Reason', validators=[DataRequired()])
-
     submit = SubmitField('Log Absence')

@@ -61,17 +61,36 @@ def dashboard():
     if current_user.role == 1:  # Student
         request_form = RequestForm()
         shabbat_form = OffShabbatDestinationForm()
-        recent_requests = Request.query.filter_by(student_id=current_user.id).order_by(Request.submission_time.desc()).limit(5).all()
-        return render_template('student_dashboard.html', request_form=request_form, shabbat_form=shabbat_form, recent_requests=recent_requests)
+        recent_requests = Request.query.filter_by(student_id=current_user.id).order_by(
+            Request.submission_time.desc()).limit(5).all()
+        return render_template('student_dashboard.html', request_form=request_form, shabbat_form=shabbat_form,
+                               recent_requests=recent_requests)
+
     elif current_user.role == 2:  # Counselor
         unanswered_requests = Request.query.filter_by(status='pending').all()
         absence_form = AbsenceLoggingForm()
-        return render_template('counselor_dashboard.html', unanswered_requests=unanswered_requests, absence_form=absence_form)
+        return render_template('counselor_dashboard.html', unanswered_requests=unanswered_requests,
+                               absence_form=absence_form)
+
     elif current_user.role == 3:  # Director
+        # Fetch unanswered requests and unapproved users
         unanswered_requests = Request.query.filter_by(status='pending').all()
-        absence_form = AbsenceLoggingForm()
         unapproved_users = User.query.filter_by(is_approved=False).all()
-        return render_template('director_dashboard.html', unanswered_requests=unanswered_requests, absence_form=absence_form, unapproved_users=unapproved_users)
+
+        # Fetch all students (assuming role 1 is for students)
+        students = User.query.filter_by(role=1).all()
+
+        # Populate AbsenceLoggingForm with the list of students
+        absence_form = AbsenceLoggingForm()
+        absence_form.student_id.choices = [(student.id, student.username) for student in
+                                           students]  # Add choices for student dropdown
+
+        # Render director dashboard with the student list
+        return render_template('director_dashboard.html',
+                               unanswered_requests=unanswered_requests,
+                               absence_form=absence_form,
+                               unapproved_users=unapproved_users,
+                               students=students)
 
 
 @app.route('/submit_request', methods=['POST'])
