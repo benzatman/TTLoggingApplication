@@ -6,7 +6,7 @@ load_dotenv()
 
 class Config:
     MYSQL_PASSWORD = os.environ.get('mysql_password')
-    SQLALCHEMY_DATABASE_URI = f'mysql://TT:{MYSQL_PASSWORD}@localhost/TTRequests'
+    SQLALCHEMY_DATABASE_URI = f'mysql+mysqldb://TT:{MYSQL_PASSWORD}@localhost/TTRequests'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Twilio configuration
