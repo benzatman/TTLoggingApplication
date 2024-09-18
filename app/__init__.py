@@ -3,13 +3,11 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_migrate import Migrate
 from config import Config
-from app.models import User  # Import the User model
 
 # Initialize extensions (but do not bind to an app yet)
 db = SQLAlchemy()
 login_manager = LoginManager()
 migrate = Migrate()  # Initialize the migrate object but don't bind it yet
-
 
 def create_app():
     app = Flask(__name__)
@@ -25,6 +23,7 @@ def create_app():
     # Define the user_loader function to retrieve user by ID from the database
     @login_manager.user_loader
     def load_user(user_id):
+        from app.models import User  # Move import here to avoid circular imports
         return User.query.get(int(user_id))
 
     # Import routes and models *after* app and db are initialized
@@ -32,3 +31,4 @@ def create_app():
         from app import routes, models  # Avoid circular imports
 
     return app
+
