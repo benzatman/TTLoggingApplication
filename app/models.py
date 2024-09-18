@@ -6,7 +6,7 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)  # Google email
     username = db.Column(db.String(100), nullable=False)  # Name from Google
-    password_hash = db.Column(db.String(255), nullable=False)  # Not used, but required for compatibility
+    password_hash = db.Column(db.String(255), nullable=True)  # Not used, but required for compatibility
     phone_number = db.Column(db.String(25), nullable=True)
     role = db.Column(db.Integer, nullable=True)  # 1 for student, 2 for counselor, 3 for director
     is_approved = db.Column(db.Boolean, default=False)  # Indicates if the user is approved by a director

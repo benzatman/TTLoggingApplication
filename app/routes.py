@@ -197,12 +197,14 @@ def manage_users():
         return redirect(url_for('dashboard'))
 
     if request.method == 'POST':
+        email = request.form.get('email')
         username = request.form.get('username')
         phone_number = request.form.get('phone_number')
         role = int(request.form.get('role'))
 
         if 'add_user' in request.form:
             new_user = User(
+                email=email,
                 username=username,
                 password_hash=generate_password_hash(request.form.get('password')),
                 role=role,
