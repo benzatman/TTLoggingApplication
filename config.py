@@ -5,6 +5,7 @@ load_dotenv()
 
 
 class Config:
+    SECRET_KEY = os.environ.get('secret_key')
     MYSQL_PASSWORD = os.environ.get('mysql_password')
     SQLALCHEMY_DATABASE_URI = f'mysql+mysqldb://TT:{MYSQL_PASSWORD}@localhost/TTRequests'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
