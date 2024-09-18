@@ -1,5 +1,5 @@
 from werkzeug.security import check_password_hash, generate_password_hash
-from app.models import Request
+from app.models import Request, ShabbatSubmission
 from app.forms import LoginForm, RequestForm, OffShabbatDestinationForm, AbsenceLoggingForm
 from twilio.rest import Client
 from datetime import datetime
@@ -54,7 +54,6 @@ def send_whatsapp_message_to_roles(roles, message):
 def home():
     return 'Hello, this is the home page! go to tlvbot.com/login to login.'
 
-
 @app.route('/dashboard')
 @login_required
 def dashboard():
@@ -85,12 +84,15 @@ def dashboard():
         absence_form.student_id.choices = [(student.id, student.username) for student in
                                            students]  # Add choices for student dropdown
 
+        # Fetch recent Shabbat form submissions
+        recent_shabbat_submissions = ShabbatSubmission.query.order_by(ShabbatSubmission.submission_time.desc()).limit(5).all()
+
         # Render director dashboard with the student list
         return render_template('director_dashboard.html',
                                unanswered_requests=unanswered_requests,
                                absence_form=absence_form,
                                unapproved_users=unapproved_users,
-                               students=students)
+                               recent_shabbat_submissions=recent_shabbat_submissions)
 
 
 @app.route('/submit_request', methods=['POST'])
@@ -342,3 +344,25 @@ def approve_users():
 
     unapproved_users = User.query.filter_by(is_approved=False).all()
     return render_template('approve_users.html', unapproved_users=unapproved_users)
+
+
+@app.route('/approve_shabbat_submission/<int:submission_id>', methods=['POST'])
+@login_required
+def approve_shabbat_submission(submission_id):
+    submission = ShabbatSubmission.query.get_or_404(submission_id)
+
+    action = request.form.get('action')
+    message = request.form.get('message')
+
+    if action == 'approve':
+        submission.status = 'approved'
+        # Optional: You can add logic here to send a notification or message to the student
+    elif action == 'reject':
+        submission.status = 'rejected'
+        # Optional: Send a rejection message or notification
+
+    submission.decision_time = db.func.now()
+    db.session.commit()
+
+    flash(f'Shubbat submission {action} successfully.', 'success')
+    return redirect(url_for('dashboard'))

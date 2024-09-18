@@ -132,5 +132,26 @@
             <input type="submit" value="Search" class="btn btn-info">
         </div>
     </form>
+
+<!-- Shabbat Form Submissions Section -->
+    <h3>Recent Shabbat Form Submissions</h3>
+    {% if recent_shabbat_submissions %}
+    <ul>
+        {% for submission in recent_shabbat_submissions %}
+        <li>
+            <strong>{{ submission.student.username }}</strong> requested to go to {{ submission.destination }} from
+            {{ submission.start_date.strftime('%Y-%m-%d') }} to {{ submission.end_date.strftime('%Y-%m-%d') }}.
+            <form method="POST" action="{{ url_for('approve_shabbat_submission', submission_id=submission.id) }}">
+                <textarea name="message" placeholder="Leave a message (optional)" class="form-control"></textarea>
+                <button name="action" value="approve" class="btn btn-success">Approve</button>
+                <button name="action" value="reject" class="btn btn-danger">Reject</button>
+            </form>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>No recent Shabbat form submissions.</p>
+    {% endif %}
+
 </div>
 {% endblock %}

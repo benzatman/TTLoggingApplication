@@ -35,10 +35,13 @@ class AbsenceLog(db.Model):
     counselor_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
 
-class OffShabbatDestinationLog(db.Model):
+class ShabbatSubmission(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    shabbat_date = db.Column(db.DateTime, default=db.func.now().op('AT TIME ZONE')('Asia/Jerusalem'))
-    relation_to_host = db.Column(db.String(50), nullable=False)
-    destination = db.Column(db.String(50), nullable=False)
-    submission_time = db.Column(db.DateTime, default=db.func.now().op('AT TIME ZONE')('Asia/Jerusalem'))
+    destination = db.Column(db.String(100), nullable=False)
+    start_date = db.Column(db.DateTime, nullable=False)
+    end_date = db.Column(db.DateTime, nullable=False)
+    submission_time = db.Column(db.DateTime, default=db.func.now(), nullable=False)
+    status = db.Column(db.String(20), default='pending')  # pending, approved, rejected
+
+    student = db.relationship('User', backref='shabbat_submissions', lazy=True)
