@@ -131,7 +131,7 @@ def approve_request(request_id):
     message = request.form.get('message')
     if action == 'approve':
         db_request.status = 'approved'
-        db_request.decision_time = datetime.now(datetime.astimezone.utc)
+        db_request.decision_time = datetime.now(datetime.timezone.utc)
         db_request.decision_message = message
         db_request.counselor_id = current_user.id
         db.session.commit()
@@ -147,7 +147,7 @@ def approve_request(request_id):
         flash('Request approved.', 'success')
     elif action == 'reject':
         db_request.status = 'rejected'
-        db_request.decision_time = datetime.now(datetime.astimezone.utc)
+        db_request.decision_time = datetime.now(datetime.timezone.utc)
         db_request.decision_message = message
         db_request.counselor_id = current_user.id
         db.session.commit()
