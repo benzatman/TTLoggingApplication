@@ -167,19 +167,28 @@ def approve_request(request_id):
 @app.route('/log_absence', methods=['POST'])
 @login_required
 def log_absence():
-    form = AbsenceLoggingForm()
-    if form.validate_on_submit():
+    students = User.query.filter_by(role=1).all()
+    absence_form = AbsenceLoggingForm()
+    absence_form.student_id.choices = [(student.id, student.username) for student in students]
+
+
+    if absence_form.validate_on_submit():
         absence_log = AbsenceLog(
-            student_id=form.student_id.data,
-            what_was_missed=request.form['what_was_missed'],
-            time_missed=request.form['time_missed'],
-            details=request.form['details'],
-            counselor_id=current_user.id  # Assuming the current user is the counselor
+            student_id=absence_form.student_id.data,
+            what_was_missed=absence_form.what_was_missed.data,
+            time_missed=absence_form.time_missed.data,
+            details=absence_form.details.data,
+            reason=absence_form.reason.data,
+            counselor_id=current_user.id
         )
         db.session.add(absence_log)
         db.session.commit()
         flash('Absence logged successfully.', 'success')
+    else:
+        flash('Error logging absence. Please check your input.', 'danger')
+
     return redirect(url_for('dashboard'))
+
 
 
 @app.route('/statistics', methods=['GET', 'POST'])
