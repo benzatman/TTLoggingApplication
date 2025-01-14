@@ -100,20 +100,27 @@ def dashboard():
 def submit_request():
     form = RequestForm()
     if form.validate_on_submit():
+        start_date = datetime.strptime(request.form['start_date'], '%Y-%m-%dT%H:%M')
+        end_date = request.form.get('end_date')
+        end_date = datetime.strptime(end_date, '%Y-%m-%dT%H:%M') if end_date else None
+
         new_request = Request(
             student_id=current_user.id,
             request_type=form.request_type.data,
-            details=form.details.data
+            details=form.details.data,
+            start_date=start_date,
+            end_date=end_date
         )
         db.session.add(new_request)
         db.session.commit()
 
         # Send WhatsApp message to directors and counselors
-        message = f'You have a new request from {current_user.username}.'
+        message = f'You have a new request from {current_user.username} starting at {start_date}.'
         send_whatsapp_message_to_roles([2, 3], message)
 
         flash('Request submitted successfully.', 'success')
     return redirect(url_for('dashboard'))
+
 
 
 @app.route('/approve_request/<int:request_id>', methods=['POST'])
@@ -367,19 +374,27 @@ def approve_shabbat_submission(submission_id):
     flash(f'Shabbat submission {action} successfully.', 'success')
     return redirect(url_for('dashboard'))
 
-
 @app.route('/submit_shabbat', methods=['POST'])
 @login_required
 def submit_shabbat():
     form = OffShabbatDestinationForm()
     if form.validate_on_submit():
-        shabbat_submission = ShabbatSubmission(
+        start_date = datetime.strptime(request.form['start_date'], '%Y-%m-%d')
+        end_date = datetime.strptime(request.form['end_date'], '%Y-%m-%d')
+
+        new_submission = ShabbatSubmission(
             student_id=current_user.id,
             destination=form.destination.data,
-            reason=form.reason.data
+            contact_info=form.contact_info.data,
+            start_date=start_date,
+            end_date=end_date
         )
-        db.session.add(shabbat_submission)
+        db.session.add(new_submission)
         db.session.commit()
 
-        flash('Shabbat destination submitted successfully.', 'success')
+        # Notify directors and counselors
+        message = f'{current_user.username} submitted a new Shabbat destination.'
+        send_whatsapp_message_to_roles([2, 3], message)
+
+        flash('Shabbat submission sent successfully.', 'success')
     return redirect(url_for('dashboard'))
