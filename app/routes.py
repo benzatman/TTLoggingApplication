@@ -122,7 +122,7 @@ def submit_request():
 @app.route('/approve_request/<int:request_id>', methods=['POST'])
 @login_required
 def approve_request(request_id):
-    request = RequestModel.query.get_or_404(request_id)
+    db_request = RequestModel.query.get_or_404(request_id)
     if current_user.role not in [2, 3]:
         flash('You do not have permission to perform this action.', 'danger')
         return redirect(url_for('dashboard'))
@@ -130,10 +130,10 @@ def approve_request(request_id):
     action = request.form.get('action')
     message = request.form.get('message')
     if action == 'approve':
-        request.status = 'approved'
-        request.decision_time = datetime.utcnow()
-        request.decision_message = message
-        request.counselor_id = current_user.id
+        db_request.status = 'approved'
+        db_request.decision_time = datetime.now(datetime.timezone.utc)
+        db_request.decision_message = message
+        db_request.counselor_id = current_user.id
         db.session.commit()
 
         # Notify the student
@@ -146,10 +146,10 @@ def approve_request(request_id):
         send_whatsapp_message_to_roles([2, 3], notification_message)
         flash('Request approved.', 'success')
     elif action == 'reject':
-        request.status = 'rejected'
-        request.decision_time = datetime.utcnow()
-        request.decision_message = message
-        request.counselor_id = current_user.id
+        db_request.status = 'rejected'
+        db_request.decision_time = datetime.now(datetime.timezone.utc)
+        db_request.decision_message = message
+        db_request.counselor_id = current_user.id
         db.session.commit()
 
         # Notify the student
