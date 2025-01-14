@@ -28,7 +28,7 @@ def get_google_provider_cfg():
 def get_phone_numbers_by_role(role):
     """Get the list of phone numbers for users with the specified role."""
     users = User.query.filter_by(role=role).all()
-    return [f"whatsapp:{user.phone_number}" for user in users if user.phone_number]
+    return [f"whatsapp:+{user.phone_number}" for user in users if user.phone_number]
 
 
 def send_whatsapp_message(to_numbers, message):
@@ -364,5 +364,5 @@ def approve_shabbat_submission(submission_id):
     submission.decision_time = db.func.now()
     db.session.commit()
 
-    flash(f'Shubbat submission {action} successfully.', 'success')
+    flash(f'Shabbat submission {action} successfully.', 'success')
     return redirect(url_for('dashboard'))
