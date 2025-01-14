@@ -1,5 +1,5 @@
 from werkzeug.security import check_password_hash, generate_password_hash
-from app.models import Request, ShabbatSubmission
+from app.models import Request as RequestModel, ShabbatSubmission
 from app.forms import LoginForm, RequestForm, OffShabbatDestinationForm, AbsenceLoggingForm
 from twilio.rest import Client
 from datetime import datetime
@@ -60,13 +60,13 @@ def dashboard():
     if current_user.role == 1:  # Student
         request_form = RequestForm()
         shabbat_form = OffShabbatDestinationForm()
-        recent_requests = Request.query.filter_by(student_id=current_user.id).order_by(
-            Request.submission_time.desc()).limit(5).all()
+        recent_requests = RequestModel.query.filter_by(student_id=current_user.id).order_by(
+            RequestModel.submission_time.desc()).limit(5).all()
         return render_template('student_dashboard.html', request_form=request_form, shabbat_form=shabbat_form,
                                recent_requests=recent_requests)
 
     elif current_user.role == 2:  # Counselor
-        unanswered_requests = Request.query.filter_by(status='pending').all()
+        unanswered_requests = RequestModel.query.filter_by(status='pending').all()
         students = User.query.filter_by(role=1).all()  # Fetch all students
         absence_form = AbsenceLoggingForm()
         absence_form.student_id.choices = [(student.id, student.username) for student in students]
@@ -75,7 +75,7 @@ def dashboard():
                                absence_form=absence_form, students=students)
 
     elif current_user.role == 3:  # Director
-        unanswered_requests = Request.query.filter_by(status='pending').all()
+        unanswered_requests = RequestModel.query.filter_by(status='pending').all()
         unapproved_users = User.query.filter_by(is_approved=False).all()
         students = User.query.filter_by(role=1).all()  # Fetch all students
         absence_form = AbsenceLoggingForm()
@@ -100,7 +100,7 @@ def submit_request():
         end_date = request.form.get('end_date')
         end_date = datetime.strptime(end_date, '%Y-%m-%dT%H:%M') if end_date else None
 
-        new_request = Request(
+        new_request = RequestModel(
             student_id=current_user.id,
             request_type=form.request_type.data,
             details=form.details.data,
@@ -122,7 +122,7 @@ def submit_request():
 @app.route('/approve_request/<int:request_id>', methods=['POST'])
 @login_required
 def approve_request(request_id):
-    request = Request.query.get_or_404(request_id)
+    request = RequestModel.query.get_or_404(request_id)
     if current_user.role not in [2, 3]:
         flash('You do not have permission to perform this action.', 'danger')
         return redirect(url_for('dashboard'))
@@ -204,15 +204,15 @@ def statistics():
         user = User.query.filter_by(username=username).first()
         if user:
             stats['username'] = user.username
-            stats['total_requests'] = Request.query.filter_by(student_id=user.id).count()
-            stats['approved_requests'] = Request.query.filter_by(student_id=user.id, status='approved').count()
-            stats['rejected_requests'] = Request.query.filter_by(student_id=user.id, status='rejected').count()
+            stats['total_requests'] = RequestModel.query.filter_by(student_id=user.id).count()
+            stats['approved_requests'] = RequestModel.query.filter_by(student_id=user.id, status='approved').count()
+            stats['rejected_requests'] = RequestModel.query.filter_by(student_id=user.id, status='rejected').count()
             stats['absences'] = AbsenceLog.query.filter_by(student_id=user.id).count()
 
 
             # Calculate average response time
             response_times = []
-            for req in Request.query.filter_by(student_id=user.id).all():
+            for req in RequestModel.query.filter_by(student_id=user.id).all():
                 if req.decision_time and req.submission_time:
                     response_times.append((req.decision_time - req.submission_time).total_seconds())
             if response_times:
