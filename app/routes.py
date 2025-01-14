@@ -137,12 +137,12 @@ def approve_request(request_id):
         db.session.commit()
 
         # Notify the student
-        student_phone = f"whatsapp:{request.student.phone_number}"
+        student_phone = f"whatsapp:{db_request.student.phone_number}"
         notification_message = f'Your request was approved by {current_user.username}. Message: {message}'
         send_whatsapp_message([student_phone], notification_message)
 
         # Notify the counselors and directors
-        notification_message = f'Request from {request.student.username} was approved by {current_user.username}.'
+        notification_message = f'Request from {db_request.student.username} was approved by {current_user.username}.'
         send_whatsapp_message_to_roles([2, 3], notification_message)
         flash('Request approved.', 'success')
     elif action == 'reject':
@@ -153,12 +153,12 @@ def approve_request(request_id):
         db.session.commit()
 
         # Notify the student
-        student_phone = f"whatsapp:{request.student.phone_number}"
+        student_phone = f"whatsapp:{db_request.student.phone_number}"
         notification_message = f'Your request was rejected by {current_user.username}. Message: {message}'
         send_whatsapp_message([student_phone], notification_message)
 
         # Notify the counselors and directors
-        notification_message = f'Request from {request.student.username} was rejected by {current_user.username}.'
+        notification_message = f'Request from {db_request.student.username} was rejected by {current_user.username}.'
         send_whatsapp_message_to_roles([2, 3], notification_message)
         flash('Request rejected.', 'danger')
 
