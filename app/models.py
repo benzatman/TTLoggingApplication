@@ -26,6 +26,7 @@ class Request(db.Model):
     counselor_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     student = db.relationship('User', backref='requests', lazy=True)
+    counselor = db.relationship('User', foreign_keys=[counselor_id], backref='handled_requests')
 
 
 class AbsenceLog(db.Model):
