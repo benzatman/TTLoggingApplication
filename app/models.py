@@ -19,14 +19,15 @@ class Request(db.Model):
     status = db.Column(db.String(20), default='pending')
     details = db.Column(db.Text)
     start_date = db.Column(db.DateTime, nullable=False, default=db.func.current_timestamp())
-    end_date = db.Column(db.DateTime, nullable=True)     # Updated field to include time
+    end_date = db.Column(db.DateTime, nullable=True)
     submission_time = db.Column(db.DateTime, default=db.func.now())
     decision_time = db.Column(db.DateTime)
     decision_message = db.Column(db.Text)
     counselor_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
-    student = db.relationship('User', backref='requests', lazy=True)
+    student = db.relationship('User', foreign_keys=[student_id], backref='requests', lazy=True)
     counselor = db.relationship('User', foreign_keys=[counselor_id], backref='handled_requests')
+
 
 
 class AbsenceLog(db.Model):
