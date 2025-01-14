@@ -66,13 +66,8 @@ def dashboard():
                                recent_requests=recent_requests)
 
     elif current_user.role == 2:  # Counselor
-        # Fetch unanswered requests
         unanswered_requests = Request.query.filter_by(status='pending').all()
-
-        # Fetch all students (assuming role 1 is for students)
-        students = User.query.filter_by(role=1).all()
-
-        # Populate AbsenceLoggingForm with the list of students
+        students = User.query.filter_by(role=1).all()  # Fetch all students
         absence_form = AbsenceLoggingForm()
         absence_form.student_id.choices = [(student.id, student.username) for student in students]
 
@@ -80,19 +75,13 @@ def dashboard():
                                absence_form=absence_form, students=students)
 
     elif current_user.role == 3:  # Director
-        # Fetch unanswered requests and unapproved users
         unanswered_requests = Request.query.filter_by(status='pending').all()
         unapproved_users = User.query.filter_by(is_approved=False).all()
-
-        # Fetch all students (assuming role 1 is for students)
-        students = User.query.filter_by(role=1).all()
-
-        # Populate AbsenceLoggingForm with the list of students
+        students = User.query.filter_by(role=1).all()  # Fetch all students
         absence_form = AbsenceLoggingForm()
         absence_form.student_id.choices = [(student.id, student.username) for student in students]
-
-        # Fetch recent Shabbat form submissions
-        recent_shabbat_submissions = ShabbatSubmission.query.order_by(ShabbatSubmission.submission_time.desc()).limit(5).all()
+        recent_shabbat_submissions = ShabbatSubmission.query.order_by(
+            ShabbatSubmission.submission_time.desc()).limit(5).all()
 
         return render_template('director_dashboard.html',
                                unanswered_requests=unanswered_requests,
