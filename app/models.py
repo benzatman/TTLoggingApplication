@@ -18,7 +18,7 @@ class Request(db.Model):
     request_type = db.Column(db.String(20), nullable=False)
     status = db.Column(db.String(20), default='pending')
     details = db.Column(db.Text)
-    start_date = db.Column(db.DateTime, nullable=False)  # Updated field to include time
+    start_date = db.Column(db.DateTime, nullable=False, default=db.func.current_timestamp())
     end_date = db.Column(db.DateTime, nullable=True)     # Updated field to include time
     submission_time = db.Column(db.DateTime, default=db.func.now())
     decision_time = db.Column(db.DateTime)
