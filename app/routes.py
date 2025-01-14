@@ -207,7 +207,8 @@ def statistics():
             stats['total_requests'] = Request.query.filter_by(student_id=user.id).count()
             stats['approved_requests'] = Request.query.filter_by(student_id=user.id, status='approved').count()
             stats['rejected_requests'] = Request.query.filter_by(student_id=user.id, status='rejected').count()
-            stats['absences'] = Request.query.filter_by(student_id=user.id, request_type='absence').count()
+            stats['absences'] = AbsenceLog.query.filter_by(student_id=user.id).count()
+
 
             # Calculate average response time
             response_times = []
