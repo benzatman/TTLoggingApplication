@@ -26,16 +26,17 @@ class Request(db.Model):
     counselor_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
 
-
 class AbsenceLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     what_was_missed = db.Column(db.String(20), nullable=False)
     time_missed = db.Column(db.String(50), nullable=False)
+    reason = db.Column(db.Text, nullable=True)  # Add this line
     details = db.Column(db.Text)
     submission_time = db.Column(db.DateTime, default=db.func.now().op('AT TIME ZONE')('Asia/Jerusalem'))
     decision_time = db.Column(db.DateTime)
     counselor_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
 
 
 class ShabbatSubmission(db.Model):
