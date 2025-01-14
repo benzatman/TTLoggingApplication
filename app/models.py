@@ -15,21 +15,17 @@ class User(UserMixin, db.Model):
 class Request(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    counselor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)  # Assuming requests can also have a counselor
+    request_type = db.Column(db.String(20), nullable=False)
+    status = db.Column(db.String(20), default='pending')
+    details = db.Column(db.Text)
+    start_date = db.Column(db.DateTime, nullable=False)  # Updated field to include time
+    end_date = db.Column(db.DateTime, nullable=True)     # Updated field to include time
+    submission_time = db.Column(db.DateTime, default=db.func.now())
+    decision_time = db.Column(db.DateTime)
+    decision_message = db.Column(db.Text)
+    counselor_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
-    request_type = db.Column(db.String(50), nullable=False)
-    status = db.Column(db.String(20), nullable=False)
-    details = db.Column(db.Text, nullable=True)
-    submission_time = db.Column(db.DateTime, nullable=False, default=db.func.now())
-    decision_time = db.Column(db.DateTime, nullable=True)
-    decision_message = db.Column(db.Text, nullable=True)
-
-    # Explicitly specify foreign key for student relationship
-    student = db.relationship('User', foreign_keys=[student_id], backref='requests')
-
-    # Optionally, define a relationship for the counselor (if needed)
-    counselor = db.relationship('User', foreign_keys=[counselor_id], backref='handled_requests')
-
+    student = db.relationship('User', backref='requests', lazy=True)
 
 
 class AbsenceLog(db.Model):
