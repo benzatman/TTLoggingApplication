@@ -2,7 +2,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from app.models import Request as RequestModel, ShabbatSubmission
 from app.forms import LoginForm, RequestForm, OffShabbatDestinationForm, AbsenceLoggingForm
 from twilio.rest import Client
-from datetime import datetime
+from datetime import datetime, timezone
 from flask import redirect, url_for, request, flash, render_template
 from flask_login import login_user, logout_user, current_user, login_required
 from app import db
@@ -131,7 +131,7 @@ def approve_request(request_id):
     message = request.form.get('message')
     if action == 'approve':
         db_request.status = 'approved'
-        db_request.decision_time = datetime.now(datetime.timezone.utc)
+        db_request.decision_time = datetime.now(timezone.utc)
         db_request.decision_message = message
         db_request.counselor_id = current_user.id
         db.session.commit()
@@ -147,7 +147,7 @@ def approve_request(request_id):
         flash('Request approved.', 'success')
     elif action == 'reject':
         db_request.status = 'rejected'
-        db_request.decision_time = datetime.now(datetime.timezone.utc)
+        db_request.decision_time = datetime.now(timezone.utc)
         db_request.decision_message = message
         db_request.counselor_id = current_user.id
         db.session.commit()
