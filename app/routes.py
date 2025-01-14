@@ -366,3 +366,20 @@ def approve_shabbat_submission(submission_id):
 
     flash(f'Shabbat submission {action} successfully.', 'success')
     return redirect(url_for('dashboard'))
+
+
+@app.route('/submit_shabbat', methods=['POST'])
+@login_required
+def submit_shabbat():
+    form = OffShabbatDestinationForm()
+    if form.validate_on_submit():
+        shabbat_submission = ShabbatSubmission(
+            student_id=current_user.id,
+            destination=form.destination.data,
+            reason=form.reason.data
+        )
+        db.session.add(shabbat_submission)
+        db.session.commit()
+
+        flash('Shabbat destination submitted successfully.', 'success')
+    return redirect(url_for('dashboard'))
